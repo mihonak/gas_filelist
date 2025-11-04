@@ -1,7 +1,7 @@
 function myFunction() {
   // 一覧にしたいフォルダの階層を指定してください。
   // 0の場合、スプレッドシートが存在するフォルダのみのファイル一覧が表示されます。
-  const depth = 1;
+  const depth = 3;
 
   const spreadSheet = SpreadsheetApp.getActive();
   const id = spreadSheet.getId();
@@ -14,32 +14,54 @@ function myFunction() {
     sheet.getRange(rowInit, 1, rowLast - rowInit + 1, 100).clear();
   }
 
-  digFolders(folderRoot, sheet, depth)
+  digFolders(folderRoot, sheet, depth, 0)
 }
 
-function digFolders(rootFolder, sheet, depth) {
-  listFiles(rootFolder, sheet);
+function digFolders(rootFolder, sheet, depth, currentDepth) {
+  listFiles(rootFolder, sheet, currentDepth);
 
   if (depth > 0) {
     const folders = rootFolder.getFolders();
+    
+    // フォルダを配列に変換してソート
+    const folderArray = [];
     while (folders.hasNext()) {
-      const folder = folders.next();
-      digFolders(folder, sheet, depth - 1)
+      folderArray.push(folders.next());
+    }
+    folderArray.sort((a, b) => a.getName().localeCompare(b.getName()));
+    
+    // ソートされたフォルダを処理
+    for (const folder of folderArray) {
+      digFolders(folder, sheet, depth - 1, currentDepth + 1);
     }
   }
 }
 
-function listFiles(folder, sheet) {
+function listFiles(folder, sheet, currentDepth) {
   const files = folder.getFiles();
+  
+  // ファイルを配列に変換してソート
+  const fileArray = [];
+  while (files.hasNext()) {
+    fileArray.push(files.next());
+  }
+  fileArray.sort((a, b) => a.getName().localeCompare(b.getName()));
+  
   let row = sheet.getLastRow() + 1;
 
-  while (files.hasNext()) {
-    const file = files.next();
+  // ソートされたファイルを処理
+  for (const file of fileArray) {
+    // フォルダ名を階層に応じた列に配置（0=A列、1=B列、2=C列）
+    const folderColumn = currentDepth + 1;
     const folderValue = '=HYPERLINK("' + folder.getUrl() + '","' + folder.getName() + '")';
-    sheet.getRange(row, 1).setValue(folderValue);
+    sheet.getRange(row, folderColumn).setValue(folderValue);
+    
+    // ファイル名は常にD列（列4）に配置
     const fileValue = '=HYPERLINK("' + file.getUrl() + '","' + file.getName() + '")';
-    sheet.getRange(row, 2).setValue(fileValue);
-    sheet.getRange(row, 4).setValue(file.getLastUpdated());
+    sheet.getRange(row, 4).setValue(fileValue);
+    
+    // 最終更新日時は従来通り
+    sheet.getRange(row, 5).setValue(file.getLastUpdated());
 
     row = row + 1;
   }
