@@ -61,9 +61,6 @@ function listFiles(folder, sheet, currentDepth) {
     const fileValue = '=HYPERLINK("' + file.getUrl() + '","' + file.getName() + '")';
     sheet.getRange(row, 4).setValue(fileValue);
     
-    // 最終更新日時は従来通り
-    sheet.getRange(row, 5).setValue(file.getLastUpdated());
-
     row = row + 1;
   }
 }
