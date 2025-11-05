@@ -51,9 +51,11 @@ function listFiles(folder, sheet, currentDepth) {
 
   // ソートされたファイルを処理
   for (const file of fileArray) {
-    // フォルダ名を階層に応じた列に配置（0=A列、1=B列、2=C列）- リンクなし
-    const folderColumn = currentDepth + 1;
-    sheet.getRange(row, folderColumn).setValue(folder.getName());
+    // フォルダ名を階層に応じた列に配置（階層0はスキップ、1=A列、2=B列、3=C列）- リンクなし
+    if (currentDepth > 0) {
+      const folderColumn = currentDepth;
+      sheet.getRange(row, folderColumn).setValue(folder.getName());
+    }
     
     // ファイル名は常にD列（列4）に配置
     const fileValue = '=HYPERLINK("' + file.getUrl() + '","' + file.getName() + '")';
