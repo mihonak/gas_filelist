@@ -59,18 +59,28 @@ function listFiles(folder, sheet, currentDepth) {
   
   let row = sheet.getLastRow() + 1;
 
-  // ソートされたファイルを処理
-  for (const file of fileArray) {
-    // フォルダ名を階層に応じた列に配置（階層0はスキップ、1=A列、2=B列、3=C列）- リンクなし
-    if (currentDepth > 0) {
-      const folderColumn = currentDepth;
-      sheet.getRange(row, folderColumn).setValue(folder.getName());
+  // ファイルがある場合のみ処理
+  if (fileArray.length > 0) {
+    // ソートされたファイルを処理
+    for (let i = 0; i < fileArray.length; i++) {
+      const file = fileArray[i];
+      
+      // フォルダ名を階層に応じた列に配置（階層0はスキップ、1=A列、2=B列、3=C列）- リンクなし
+      // 最初のファイルの行にのみフォルダ名を出力
+      if (currentDepth > 0 && i === 0) {
+        const folderColumn = currentDepth;
+        sheet.getRange(row, folderColumn).setValue(folder.getName());
+      }
+      
+      // ファイル名は常にD列（列4）に配置
+      const fileValue = '=HYPERLINK("' + file.getUrl() + '","' + file.getName() + '")';
+      sheet.getRange(row, 4).setValue(fileValue);
+      
+      row = row + 1;
     }
-    
-    // ファイル名は常にD列（列4）に配置
-    const fileValue = '=HYPERLINK("' + file.getUrl() + '","' + file.getName() + '")';
-    sheet.getRange(row, 4).setValue(fileValue);
-    
-    row = row + 1;
+  } else if (currentDepth > 0) {
+    // ファイルがない場合でも、階層1以降はフォルダ名だけを出力
+    const folderColumn = currentDepth;
+    sheet.getRange(row, folderColumn).setValue(folder.getName());
   }
 }
