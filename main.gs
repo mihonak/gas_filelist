@@ -5,7 +5,17 @@ function myFunction() {
 
   const spreadSheet = SpreadsheetApp.getActive();
   const id = spreadSheet.getId();
-  folderRoot = DriveApp.getFileById(id).getParents().next();
+  const currentFolder = DriveApp.getFileById(id).getParents().next();
+  
+  // 一つ上の階層のフォルダを取得
+  const parentFolders = currentFolder.getParents();
+  if (parentFolders.hasNext()) {
+    folderRoot = parentFolders.next();
+  } else {
+    // 親フォルダがない場合は現在のフォルダを使用
+    folderRoot = currentFolder;
+  }
+  
   const sheet = spreadSheet.getSheetByName('シート1');
 
   const rowInit = 2;
